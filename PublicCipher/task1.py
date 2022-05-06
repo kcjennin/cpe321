@@ -17,7 +17,7 @@ class User:
         # calculate the value to be eventually exchanged
         return (self.g ** self.c) % self.p
 
-    def compute_s(self, C):
+    def compute_s(self, C: int):
         # get the unhashed value for the key
         self.s = (C ** self.c) % self.p
 
