@@ -37,6 +37,50 @@ class User:
         decryptor = Cipher(algorithms.AES(self.key), modes.CBC(self.key)).decryptor()
         print((decryptor.update(ciphertext) + decryptor.finalize()).decode())
 
+class RSA:
+    def __init__(self):
+        self.E = 65537
+        self.key_gen()
+
+    def modinv(self, a, m):
+        # Applies Extended Euclid Algorithm to inverse the modulo
+        g, x, y = self.euclid_ext(a, m)
+        if g != 1:
+            raise Exception('modular inverse does not exist')
+        else:
+            return x % m
+
+    def euclid_ext(self, a, b):
+        # Found here: https://www.geeksforgeeks.org/euclidean-algorithms-basic-and-extended/
+        # Base Case
+        if a == 0 : 
+            return b, 0, 1
+            
+        gcd, x1, y1 = self.euclid_ext(b%a, a)
+    
+        # Update x and y using results of recursive call
+        return gcd, y1 - (b//a) * x1, x1
+
+    def key_gen(self):
+        # Lets pretend I can generate large primes
+        P = None
+        Q = None
+
+        # Generate a public key
+        self.public_key_gen(P, Q)
+
+        # Generate a private key
+        self.private_key_gen(P, Q)
+
+    def public_key_gen(self, P, Q):
+        # Public keys are two large prime numbers multiplied by eachother
+        self.public_key = P * Q
+
+    def private_key_gen(self, P, Q):
+        # E*D mod(((P-1) * (Q-1)) = 1
+        # Solve for D, the private key: D = (1/E) invmod ((P-1) * (Q-1))
+        self.private_key = self.modinv((1/self.E), (P-1) * (Q-1))
+
 def task1():
     # assign the two large p and g values
     p = int('B10B8F96 A080E01D DE92DE5E AE5D54EC 52C99FBC FB06A3C6 9A6A9DCA 52D23B61 6073E286 75A23D18 9838EF1E 2EE652C0 13ECB4AE A9061123 24975C3C D49B83BF ACCBDD7D 90C4BD70 98488E9C 219A7372 4EFFD6FA E5644738 FAA31A4F F55BCCC0 A151AF5F 0DC8B4BD 45BF37DF 365C1A65 E68CFDA7 6D4DA708 DF1FB2BC 2E4A4371'.replace(" ", ""), 16)
