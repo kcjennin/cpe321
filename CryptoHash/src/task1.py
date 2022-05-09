@@ -14,7 +14,7 @@ def int_to_bytes(n: int, l: int):
     return n.to_bytes(l // 8, 'little')
 
 
-def bytes_generator(l: int) -> bytes:
+def bytes_range_generator(start: int, stop: int, l: int) -> bytes:
     val = 0
     while True:
         if val == 2 ** l:
