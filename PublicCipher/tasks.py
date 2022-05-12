@@ -186,7 +186,7 @@ def task2_2():
     Mal_B.receive_text(Bob.send_text('Hi Alice!AAAAAAA'))
 
 
-def task3():
+def task3_1():
     Alice = RSA()
     Bob = RSA()
 
@@ -198,9 +198,32 @@ def task3():
     ciphertext = Alice.pub_encrypt("Goodbye, world!")
     print(Alice.priv_decrypt(ciphertext))
 
-    
-    
+def task3_2():
+    Alice = User()
+    Mallory = User()
+
+    # Alice sends her public key to Bob (and Mallory). Sends n and e.
+    Alice_rsa = RSA()
+
+    # Bob selects a random number s, and encrypts it with Alice's public key
+    s_b = str(random.randint(0, 1000))
+    c_b = Alice_rsa.pub_encrypt(s_b)
+
+    # Mallory intercepts the message, encrypts her own s, and sends it to Alice
+    s_m = str(2)
+    Mallory.s = int(s_m)
+    c_m = Alice_rsa.pub_encrypt(s_m)
+
+    # Alice decrypts Mallory's message to get s, and uses that to select the key
+    Alice.s = int(Alice_rsa.priv_decrypt(c_m)[0])
+
+    # Both Alice and Mallory calculate their keys
+    Alice.calc_key()
+    Mallory.calc_key()
+
+    # Mallory decrypts the message intended to be sent to Bob
+    Mallory.receive_text(Alice.send_text('Hi Bob!AAAAAAAAA'))
 
 
 if __name__ == '__main__':
-    task3()
+    task3_2()
