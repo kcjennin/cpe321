@@ -29,4 +29,8 @@
     people use the same RSA modulus n. Briefly describe why this is, and what 
     the ramifications are.
 
-    
+    Assuming e and d are both prime, it is possible to find s and t that together undoes the cipher text.
+    If we choose s and t such that es + dt = 1, then we would be able to combine cipher texts to decrypt
+    the original message. This could look like C_1^s and C_2^t which is equivalent to M^(es) and M^(dt). 
+    By combining these terms together like M^(es) * M^(dt), we can find M^1 % n. However it should be noted
+    that the attacker would need to know e, d, and n. 
