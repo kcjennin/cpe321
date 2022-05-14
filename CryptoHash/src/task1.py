@@ -1,72 +1,39 @@
+import csv
 import random
-from multiprocessing import Process, Event, Array, cpu_count
 import time
 from util import *
-
-sysrandom = random.SystemRandom()
-
-
-def bincount(n: int):
-    return bin(n).count("1")
+import matplotlib.pyplot as plt
+from os.path import exists
+import pandas as pd
 
 
-def int_to_bytes(n: int, l: int):
+def _int_to_bytes(n: int, l: int):
     return n.to_bytes(l // 8, 'little')
 
 
-def bytes_range_generator(start: int, stop: int, l: int) -> bytes:
-    val = 0
-    while True:
-        if val == 2 ** l:
-            return
-        yield val.to_bytes(l // 8, 'little')
-        val += 1
+def _find_collisions(min=8, max=50):
+    for bitlen in range(min, max+2, 2):
+        hash_to_str = {}
+        tic = time.time()
+        for i in range(2 ** bitlen):
+            i_hash = short_hash(str(i).encode(), bitlen)
+            if i_hash in hash_to_str:
+                yield bitlen, i, hash_to_str[i_hash], i_hash, time.time() - tic
+                break
+            hash_to_str[i_hash] = i
 
 
-def worker(b0, b1_list, quit, foundit, output):
-    h0 = short_hash(b0, 8 * len(b0))
-    while not quit.is_set():
-        for b1 in b1_list:
-            h1 = short_hash(b1, 8 * len(h1))
-            if h0 == h1:
-                for i, b in enumerate(b1):
-                    output[i] = b
-                foundit.set()
-
-
-def find_collisions():
-    ''' THIS IS FUCKED, JUST USE BYTE STRINGS OF LEN 8 I GUESS, I DONT KNOW
-    '''
-    data = []
-    # for i in range(8, 52, 2):
-    for i in [8]:
-        t0 = time.time()
-        
-        quit = Event()
-        foundit = Event()
-        b0 = sysrandom.randbytes(i//8)
-        output = Array('i', i//8)
-        
-        for i in range(cpu_count()):
-            p = Process(target=worker, args=(b0, ..., quit, foundit, output))
-
-
-        # log the time difference
-        time_diff = time.time() - t0
-
-
-
-def main():
+def task1_b():
     init_bytes = b"Hello, world!"
     bit_len = 8 * len(init_bytes)
     bits0 = int.from_bytes(init_bytes, 'little')
 
     # generate a bunch of byte strings with a hamming distance of 1 from `init_bytes`
     perms = []
-    for i in random.sample(range(bit_len), 10):
+    for _ in random.sample(range(bit_len), 10):
         bitnum = random.randint(0, bit_len)
         bits1 = bits0 ^ (1 << bitnum)
-        perms.append(int_to_bytes(bits1, bit_len))
+        perms.append(_int_to_bytes(bits1, bit_len))
     
     
     print("Checking 10 pairs of bytes with hamming distances of 1:\n")
@@ -74,5 +41,36 @@ def main():
         print(f"\t{string_SHA256(init_bytes)}\n\t{string_SHA256(perm)}\n")
 
 
+def _get_all_collisions():
+    with open("data/task1.csv", "w") as f:
+        cols = ["Length", "Item1", "Item2", "Hash", "NumChecked", "Time"]
+        rows = [cols]
+        for bitlen, item2, item1, hash, time_diff in _find_collisions(min=8, max=50):
+            rows.append([bitlen, item1, item2, hash, item2+1, time_diff])
+
+            print(f"Done with {bitlen} in {time_diff:.2f} s")
+        
+        csv.writer(f).writerows(rows)
+
+
+def task1_c():
+    if not exists("data/task1.csv"):
+        _get_all_collisions()
+    with open("data/task1.csv") as f:
+        df = pd.read_csv(f)
+
+    _, axis = plt.subplots(1, 2)
+
+    axis[0].grid(color='gray', linestyle='-', linewidth=1)
+    axis[0].plot('Length', 'Time', data=df)
+    axis[0].set_title('Digest Size vs. Collision Time')
+
+    axis[1].grid(color='gray', linestyle='-', linewidth=1)
+    axis[1].plot('Length', 'NumChecked', data=df)
+    axis[1].set_title('Digest Size vs. Number of Inputs')
+
+    plt.ticklabel_format(style='plain', useOffset=False)
+    plt.show()
+
 if __name__ == "__main__":
-    main()
+    task1_c()
