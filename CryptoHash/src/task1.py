@@ -63,13 +63,17 @@ def task1_c():
 
     axis[0].grid(color='gray', linestyle='-', linewidth=1)
     axis[0].plot('Length', 'Time', data=df)
-    axis[0].set_title('Digest Size vs. Collision Time')
+    axis[0].set_title('Collision Time vs. Digest Size')
+    axis[0].set_xlabel('Digest Size (bits)')
+    axis[0].set_ylabel('Time (s)')
 
     axis[1].grid(color='gray', linestyle='-', linewidth=1)
     axis[1].plot('Length', 'NumChecked', data=df)
-    axis[1].set_title('Digest Size vs. Number of Inputs')
+    axis[1].set_title('Number of Inputs vs. Digest Size')
+    axis[1].set_xlabel('Digest Size (bits)')
+    axis[1].set_ylabel('Number of Inputs (Tens of Millions)')
 
-    plt.ticklabel_format(style='plain', useOffset=False)
+    plt.ticklabel_format(useOffset=False)
     plt.show()
 
 if __name__ == "__main__":
