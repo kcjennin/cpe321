@@ -47,6 +47,8 @@ def main():
     # plot rsa data
     rsa_axis.plot('sign/s', 'type', data=rsa_df, label='sign')
     rsa_axis.plot('verify/s', 'type', data=rsa_df, label='verify')
+    rsa_axis.set_xlabel('Throughput (bits/s)')
+    rsa_axis.set_ylabel('Key size')
     rsa_axis.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
                     mode="expand", borderaxespad=0, ncol=3)
 
