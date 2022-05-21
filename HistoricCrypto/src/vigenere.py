@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     # print the outputs
     print("\n---------\n|Results|\n---------\n")
-    with open("vigenere.results", "w") as f:
+    with open("vigenere.txt", "w") as f:
         for file, key, text in outputs:
             output = f"{file}\tkey: {key}\n{text}\n"
             print(output)
