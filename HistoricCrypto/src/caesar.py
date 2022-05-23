@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     # print the outputs
     print("\n---------\n|Results|\n---------\n")
-    with open("caesar.txt", "w") as f:
+    with open("caesar.results", "w") as f:
         for file, key, text in outputs:
             output = f"{file}\tkey: {key}\n{text}\n"
             print(output)
