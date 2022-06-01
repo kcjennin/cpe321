@@ -128,5 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# VSCODE
 .vscode/
-*.DS_Store
+
+# Apple
+.DS_Store
