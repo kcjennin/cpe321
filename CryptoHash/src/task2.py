@@ -1,9 +1,11 @@
 import csv
 import time
 import bcrypt as bc
+import nltk
 from nltk.corpus import words
 import multiprocessing as mp
 
+# get all the words in the nltk corpus that are 6 to 10 characters long
 SIX_TO_TEN = [word.encode() for word in words.words() if 6 <= len(word) <= 10]
 
 
@@ -19,12 +21,14 @@ def read_input(filename: str) -> dict[str, str]:
     with open(filename, "rb") as f:
         users = {}
         for line in f.readlines():
+            # split each line into the user and the hash
             user, hash = line.strip().split(b":")
+            # save the salt and the whole thing separately
             users[user] = (hash[:29], hash)
     return users
 
 
-def init_worker(pi, t, ts, f, d):
+def init_worker(pi, t, ts, f, d) -> None:
     """Workers need to start with these values
 
     Args:
@@ -38,7 +42,7 @@ def init_worker(pi, t, ts, f, d):
     plain_index, target, target_salt, found, done = pi, t, ts, f, d
 
 
-def worker(num: int, word: str):
+def worker(num: int, word: str) -> None:
     """Checks a single word against the salted and hashed password
 
     Args:
@@ -52,13 +56,16 @@ def worker(num: int, word: str):
 
 
 def main():
+    # read the info from the input file
     hashed_pwds = read_input("data/shadow.txt")
     plain_pwds = {user: None for user in hashed_pwds}
 
     for user, hash in hashed_pwds.items():
+        # start a timer
         tic = time.time()
         salt, whole = hash
 
+        # initialize the variables for the workers
         m = mp.Manager()
         found = m.Event()
         done = m.Event()
@@ -66,9 +73,12 @@ def main():
 
         with mp.Pool(initializer=init_worker, initargs=(plain_index, whole, salt, found, done)) as p:
             results = {}
+            # check every single word in the set
             for i, word in enumerate(SIX_TO_TEN):
                 results[i] = p.apply_async(worker, (i, word))
 
+            # every second give a status update as long as we didn't find the
+            # password
             while not found.wait(timeout=1):
                 running, successful, error = 0, 0, 0
                 toc = time.time()
@@ -88,15 +98,20 @@ def main():
                 print(f'Successful: {successful}', end=' ')
                 print(f'Error: {error}', end=' ')
                 print(f'Rate: {rate:.0f}', end=' ')
-                print(f'Estimated completion time: {time.strftime("%H:%M:%S", time.gmtime(running / rate))}', end='\r')
+                print(f'Estimated completion time: \
+                    {time.strftime("%H:%M:%S", time.gmtime(running / rate))}', \
+                        end='\r')
 
+            # if we found the password, we can stop looking
             print()
             done.set()
         
+        # save the password if we found it
         if plain_index.value > 0:
             print(f"The password for user [{user.decode('utf8')}] is [{SIX_TO_TEN[plain_index.value].decode('utf8')}]")
             plain_pwds[user] = SIX_TO_TEN[plain_index.value]
         else:
+            plain_pwds[user] = None
             print(f"Didn't find a password for user [{user.decode('utf8')}]")
     
     with open("data/task2.csv", "wb", newline='') as f:
@@ -108,4 +123,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print(len(SIX_TO_TEN))

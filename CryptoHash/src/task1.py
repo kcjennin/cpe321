@@ -8,10 +8,28 @@ import pandas as pd
 
 
 def _int_to_bytes(n: int, l: int):
+    """Return the bytes representation of `n` with length `l`
+
+    Args:
+        n (int): The integer to convert to bytes
+        l (int): The length of the bytes to return
+
+    Returns:
+        bytes: The bytes representation of `n`
+    """
     return n.to_bytes(l // 8, 'little')
 
 
-def _find_collisions(min=8, max=50):
+def _find_collisions(min=8, max=50) -> tuple[int, int, int, int, int]:
+    """Find collisions for hash lengths between `min` and `max`
+
+    Args:
+        min (int, optional): smallest length in bits. Defaults to 8.
+        max (int, optional): longest length in bits. Defaults to 50.
+
+    Yields:
+        tuple[int, int, int, int, int]: length, item1, item2, hash, time_diff
+    """
     for bitlen in range(min, max+2, 2):
         hash_to_str = {}
         tic = time.time()
@@ -24,6 +42,7 @@ def _find_collisions(min=8, max=50):
 
 
 def task1_b():
+    # start with a random byte string
     init_bytes = b"Hello, world!"
     bit_len = 8 * len(init_bytes)
     bits0 = int.from_bytes(init_bytes, 'little')
@@ -42,6 +61,7 @@ def task1_b():
 
 
 def _get_all_collisions():
+    # go through all the lengths and find the collisions
     with open("data/task1.csv", "w") as f:
         cols = ["Length", "Item1", "Item2", "Hash", "NumChecked", "Time"]
         rows = [cols]
@@ -59,6 +79,7 @@ def task1_c():
     with open("data/task1.csv") as f:
         df = pd.read_csv(f)
 
+    # plot the results
     _, axis = plt.subplots(1, 2)
 
     axis[0].grid(color='gray', linestyle='-', linewidth=1)
@@ -77,4 +98,5 @@ def task1_c():
     plt.show()
 
 if __name__ == "__main__":
-    task1_c()
+    task1_b()
+    # task1_c()
